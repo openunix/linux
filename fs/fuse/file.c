@@ -210,7 +210,7 @@ void fuse_finish_open(struct inode *inode, struct file *file)
 		fi->attr_version = atomic64_inc_return(&fc->attr_version);
 		i_size_write(inode, 0);
 		spin_unlock(&fi->lock);
-		fuse_invalidate_attr(inode);
+		fuse_invalidate_attr_mask(inode, FUSE_STATX_MODSIZE);
 		if (fc->writeback_cache)
 			file_update_time(file);
 	}
@@ -522,7 +522,7 @@ inval_attr_out:
 	 * enabled, i_blocks from cached attr may not be accurate.
 	 */
 	if (!err && fm->fc->writeback_cache)
-		fuse_invalidate_attr(inode);
+		fuse_invalidate_attr_mask(inode, STATX_BLOCKS);
 	return err;
 }
 
@@ -1282,7 +1282,7 @@ static ssize_t fuse_perform_write(struct kiocb *iocb, struct iov_iter *ii)
 		fuse_write_update_size(inode, pos);
 
 	clear_bit(FUSE_I_SIZE_UNSTABLE, &fi->state);
-	fuse_invalidate_attr(inode);
+	fuse_invalidate_attr_mask(inode, FUSE_STATX_MODSIZE);
 
 	if (!res)
 		return err;
@@ -1601,7 +1601,7 @@ static ssize_t fuse_direct_write_iter(struct kiocb *iocb, struct iov_iter *from)
 					     FUSE_DIO_WRITE);
 		}
 	}
-	fuse_invalidate_attr(inode);
+	fuse_invalidate_attr_mask(inode, FUSE_STATX_MODSIZE);
 	if (res > 0)
 		fuse_write_update_size(inode, iocb->ki_pos);
 	if (exclusive_lock)
@@ -1817,7 +1817,7 @@ static void fuse_writepage_end(struct fuse_mount *fm, struct fuse_args *args,
 	 * is enabled, we trust local ctime/mtime.
 	 */
 	if (!fc->writeback_cache)
-		fuse_invalidate_attr(inode);
+		fuse_invalidate_attr_mask(inode, FUSE_STATX_MODIFY);
 	spin_lock(&fi->lock);
 	rb_erase(&wpa->writepages_entry, &fi->writepages);
 	while (wpa->next) {
@@ -2931,7 +2931,7 @@ fuse_direct_IO(struct kiocb *iocb, struct iov_iter *iter)
 
 	if (iov_iter_rw(iter) == WRITE) {
 		ret = fuse_direct_io(io, iter, &pos, FUSE_DIO_WRITE);
-		fuse_invalidate_attr(inode);
+		fuse_invalidate_attr_mask(inode, FUSE_STATX_MODSIZE);
 	} else {
 		ret = __fuse_direct_read(io, iter, &pos);
 	}
@@ -3053,7 +3053,7 @@ static long fuse_file_fallocate(struct file *file, int mode, loff_t offset,
 	if (mode & (FALLOC_FL_PUNCH_HOLE | FALLOC_FL_ZERO_RANGE))
 		truncate_pagecache_range(inode, offset, offset + length - 1);
 
-	fuse_invalidate_attr(inode);
+	fuse_invalidate_attr_mask(inode, FUSE_STATX_MODSIZE);
 
 out:
 	if (!(mode & FALLOC_FL_KEEP_SIZE))
@@ -3165,7 +3165,7 @@ static ssize_t __fuse_copy_file_range(struct file *file_in, loff_t pos_in,
 		file_update_time(file_out);
 	}
 
-	fuse_invalidate_attr(inode_out);
+	fuse_invalidate_attr_mask(inode_out, FUSE_STATX_MODSIZE);
 
 	err = outarg.size;
 out:
