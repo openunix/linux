@@ -200,6 +200,7 @@
  *
  *  7.38
  *  - add FUSE_EXPIRE_ONLY flag to fuse_notify_inval_entry
+ *  - add FOPEN_PARALLEL_DIRECT_WRITES
  *  - add FUSE_HAS_EXPIRE_ONLY
  */
 
