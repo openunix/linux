@@ -197,6 +197,8 @@
  *
  *  7.37
  *  - add FUSE_TMPFILE
+ *
+ *  7.38
  *  - add FUSE_EXPIRE_ONLY flag to fuse_notify_inval_entry
  *  - add FUSE_HAS_EXPIRE_ONLY
  */
@@ -234,7 +236,7 @@
 #define FUSE_KERNEL_VERSION 7
 
 /** Minor version number of this interface */
-#define FUSE_KERNEL_MINOR_VERSION 37
+#define FUSE_KERNEL_MINOR_VERSION 38
 
 /** The node ID of the root inode */
 #define FUSE_ROOT_ID 1
