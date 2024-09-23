@@ -9,6 +9,8 @@
 #include <linux/compat.h>
 #include <linux/fileattr.h>
 
+#define FUSE_VERITY_ENABLE_ARG_MAX_PAGES 256
+
 static ssize_t fuse_send_ioctl(struct fuse_mount *fm, struct fuse_args *args,
 			       struct fuse_ioctl_out *outarg)
 {
