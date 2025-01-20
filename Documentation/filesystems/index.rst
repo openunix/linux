@@ -97,6 +97,7 @@ Documentation for filesystem implementations.
    hpfs
    fuse
    fuse-io
+   fuse-io-uring
    inotify
    isofs
    nilfs2
