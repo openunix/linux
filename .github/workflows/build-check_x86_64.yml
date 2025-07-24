@@ -4,6 +4,11 @@ on:
     branches:
       - '**'
       - '!mainline'
+  pull_request:
+    branches:
+      - '**'
+      - '!mainline'
+
 
 jobs:
   kernel-build-job:
