@@ -1,0 +1,25 @@
+name: Sync Branches
+
+on:
+  schedule:
+    - cron: 0 0 * * *
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Sync redfs branches
+        run: |
+          gh repo sync $REPOSITORY -b master
+          gh repo sync $REPOSITORY -b redfs-rhel9_5-503.40.1
+          gh repo sync $REPOSITORY -b redfs-rhel9_6-570.12.1
+          gh repo sync $REPOSITORY -b redfs-ubuntu-noble-6.8.0-58.60
+          gh repo sync $REPOSITORY -b redfs-rhel10_0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+
+  
