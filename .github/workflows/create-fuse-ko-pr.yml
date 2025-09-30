@@ -1,0 +1,95 @@
+# Copy fuse related codes from branches and create PR for fuse-kernel-modules.
+
+name: Sync to fuse-kernel-modules
+
+on:
+  # Triggers the workflow on push or pull request events for target branches.
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "*" ]
+
+  # Allows you to run this workflow manually from the Actions tab.
+  workflow_dispatch:
+
+jobs:
+  create-fuse-ko-pr:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out to a different directory to avoid following checkout remove it. 
+      - uses: actions/checkout@v4
+        with:
+          path: linux
+
+      - name: Try to checkout sync-${{ github.ref_name }} if it exists
+        uses: actions/checkout@v4
+        id: try-checkout
+        continue-on-error: true
+        with:
+          repository: openunix/fuse-kernel-modules
+          ref: sync-${{ github.ref_name }}
+          fetch-depth: 0
+          path: fuse-kernel-modules
+          token: ${{ secrets.OPENUNIXPAT }}
+
+      - name: Fallback to checkout main
+        if: steps.try-checkout.outcome == 'failure'
+        uses: actions/checkout@v4
+        with:
+          repository: openunix/fuse-kernel-modules
+          ref: main
+          fetch-depth: 0
+          path: fuse-kernel-modules
+          token: ${{ secrets.OPENUNIXPAT }}
+
+      - name: Import GPG keys
+        run: |
+          gpg --import << EOF
+          ${{ secrets.GPG_PRIVATE_KEY }}
+          EOF
+
+      - name: Initialize git
+        run: |
+          git config --global user.name "Feng Shuo"
+          git config --global user.email "steve.shuo.feng@gmail.com"
+          git config --global user.signingkey F96A409277704327          
+
+      - name: Create tracking branch based on main
+        if: steps.try-checkout.outcome == 'failure'
+        run: |
+          pushd fuse-kernel-modules
+          git checkout -b sync-${{ github.ref_name }}
+          popd
+
+      - name: Generate PR for fuse-kernel-modules
+        run: |
+          pushd fuse-kernel-modules
+          ./copy-from-linux-branch $GITHUB_WORKSPACE/linux ${{ github.ref_name }}
+          git add src/${{ github.ref_name }}
+          echo -e "Sync with ${{ github.repository }} branch ${{ github.ref_name }} \n" > ../commit.msg
+          echo -e "Sync with ${{ github.repository }} branch ${{ github.ref_name }} commit" >> ../commit.msg
+          echo -e "${{ github.sha }}" >> ../commit.msg
+          RET=0
+          git commit -S -F ../commit.msg 2> ../commit.log || RET=$?;
+          if [ -s ../commit.log ]; then
+            echo "Error detcted in commit:"
+            cat ../commit.log
+            exit 1
+          elif [ $RET -eq 0 ]; then
+            echo "Done. Push the code to remote:"
+            git push origin sync-${{ github.ref_name }} 2> ../push.log ||:
+          else
+            echo "No changes to existed codes. Still try with PR."
+          fi
+          if [ -s ../push.log ]; then
+            echo "Error detected in push:"
+            cat ../push.log
+          fi
+          gh pr create --base main --fill || RET=$?
+          if [ $RET -eq 1 ]; then
+            echo "No pending changes for PR, returning $RET."
+          fi
+          popd
+        env:
+          GH_TOKEN: ${{ secrets.OPENUNIXPAT }}
+
