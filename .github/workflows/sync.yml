@@ -12,8 +12,15 @@ jobs:
       contents: write
     steps:
       - name: Sync redfs branches
+        # master: torvalds/linux => DDNStorage/linux => here
+        # ctrliq/*: ctrliq/kernel-src-tree.git => DDNStorage/linux => here
+        # redfs-*: DDNStorage/linux => here
         run: |
           gh repo sync $REPOSITORY -b master
+          gh repo sync $REPOSITORY -b ctrliq/rocky9_4
+          gh repo sync $REPOSITORY -b ctrliq/rocky9_5
+          gh repo sync $REPOSITORY -b ctrliq/rocky9_6
+          gh repo sync $REPOSITORY -b redfs-rhel9_4-427.42.1
           gh repo sync $REPOSITORY -b redfs-rhel9_5-503.40.1
           gh repo sync $REPOSITORY -b redfs-rhel9_6-570.12.1
           gh repo sync $REPOSITORY -b redfs-ubuntu-noble-6.8.0-58.60
