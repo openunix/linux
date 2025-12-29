@@ -2,8 +2,8 @@
 name: Sync to redfs repo
 on:
   # Triggers the workflow on pull request merged.
-  pull_request:
-    branches: [ "*" ]
+  pull_request_target:
+    branches: [ "redfs-*" ]
     types: [ "closed" ]
 
 jobs:
