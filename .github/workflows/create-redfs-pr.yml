@@ -92,5 +92,5 @@ jobs:
           fi
           popd
         env:
-          GH_TOKEN: ${{ secrets.OPENUNIXPAT }}
+          GH_TOKEN: ${{ secrets.REDFS_TOKEN }}
 
