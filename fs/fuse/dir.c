@@ -1640,7 +1640,7 @@ static int fuse_permission(struct user_namespace *mnt_userns,
 		struct fuse_inode *fi = get_fuse_inode(inode);
 
 		if (perm_mask & READ_ONCE(fi->inval_mask) ||
-		    time_before64(fi->i_time, get_jiffies_64())) {
+		    time_before64(fi->i_perm_time, get_jiffies_64())) {
 			refreshed = true;
 
 			err = fuse_perm_getattr(inode, mask, perm_mask);
